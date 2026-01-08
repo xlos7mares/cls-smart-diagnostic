@@ -1,11 +1,11 @@
 import streamlit as st
 import pandas as pd
 import time
+from datetime import datetime
 
 # --- CONFIGURACIÓN ESTÉTICA SCUDERIA ---
-st.set_page_config(page_title="CLS Scuderia - Professional Diagnostic", layout="wide")
+st.set_page_config(page_title="CLS Scuderia Pro", layout="wide")
 
-# Estilo Ferrari: Fondo Negro, Rojo Carrera y Amarillo Módena
 st.markdown("""
     <style>
     .stApp { background-color: #000000; color: #FFFFFF; }
@@ -17,89 +17,92 @@ st.markdown("""
     }
     h1, h2, h3 { color: #FFEB00; font-family: 'Arial Black'; text-shadow: 2px 2px #FF2800; }
     .stExpander { background-color: #1a1a1a; border: 1px solid #FF2800; }
+    .css-1offfwp { background-color: #1a1a1a; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- BASE DE DATOS DE SIMULACIÓN (10 CASOS) ---
-# Coordenadas aproximadas de Uruguay para el mapa
+# --- BASE DE DATOS DE SIMULACIÓN MEJORADA ---
+# Simulamos 10 casos con ubicación, fecha, repuestos y talleres nocturnos/diurnos
 datos_simulados = [
     {
         "auto": "Chevrolet Corsa (2008)", 
         "falla": "P0130 - Sensor de Oxígeno", 
-        "lat": -34.88, "lon": -56.16, # Montevideo
+        "fecha": "08/01/2026", "hora": "23:15",
+        "depto": "Canelones", "pueblo": "Pando", "calle": "Ruta 8 Km 24.500",
+        "lat": -34.72, "lon": -55.95,
+        "repuesto_link": "https://www.mercadolibre.com.uy/sensor-oxigeno-chevrolet-corsa-gm-original",
+        "precio_repuesto": 1850, "mano_obra": 1200,
         "talleres": [
-            {"nombre": "Taller Gustavo Diaz Centro", "tel": "099 417 716", "dir": "Av. Italia 1234"},
-            {"nombre": "Mecánica La Paz", "tel": "098 111 222", "dir": "Ruta 5 km 20"},
-            {"nombre": "Electrónica Sayago", "tel": "091 333 444", "dir": "Propios 456"},
-            {"nombre": "Inyección Prado", "tel": "094 555 666", "dir": "Millán 789"},
-            {"nombre": "Servicio Técnico Sur", "tel": "092 777 888", "dir": "Rambla 101"}
+            {"nombre": "Taller Gustavo Diaz (Emergencia 24h)", "tel": "099 417 716", "tipo": "Nocturno"},
+            {"nombre": "Auxilio Pando Nocturno", "tel": "098 000 111", "tipo": "Nocturno"}
         ]
     },
     {
-        "auto": "Fiat Uno (2004)", 
-        "falla": "P0300 - Fallo de Encendido", 
-        "lat": -34.72, "lon": -56.21, # Las Piedras
+        "auto": "Ford Fiesta (2011)", 
+        "falla": "P0204 - Inyector Cilindro 4", 
+        "fecha": "08/01/2026", "hora": "14:30",
+        "depto": "Montevideo", "pueblo": "Pocitos", "calle": "Av. Brasil 2500",
+        "lat": -34.91, "lon": -56.15,
+        "repuesto_link": "https://www.mercadolibre.com.uy/inyector-nafta-ford-fiesta-kinetic-original",
+        "precio_repuesto": 4500, "mano_obra": 2500,
         "talleres": [
-            {"nombre": "Mecánica Gustavo Las Piedras", "tel": "099 417 716", "dir": "Ruta 48"},
-            {"nombre": "Taller El Canario", "tel": "099 000 111", "dir": "Calle Principal 5"},
-            {"nombre": "Repuestos Don Luis", "tel": "095 222 333", "dir": "Av. Artigas 44"},
-            {"nombre": "Inyección Norte", "tel": "097 444 555", "dir": "Guaná 32"},
-            {"nombre": "Taller Piedras Blancas", "tel": "093 666 777", "dir": "Ruta 67"}
+            {"nombre": "Mecánica Gustavo Central", "tel": "099 417 716", "tipo": "Diurno"},
+            {"nombre": "Inyección Montevideo", "tel": "091 222 333", "tipo": "Diurno"}
         ]
     }
-    # (Se pueden seguir sumando hasta 10 casos iguales)
 ]
 
-# --- CONTROL DE ESTADO (SESSION STATE) ---
-if 'paso' not in st.session_state:
-    st.session_state.paso = 0
-
-def siguiente_vehiculo():
-    st.session_state.paso = (st.session_state.paso + 1) % len(datos_simulados)
+# --- CONTROL DE ESTADO ---
+if 'paso' not in st.session_state: st.session_state.paso = 0
+def siguiente(): st.session_state.paso = (st.session_state.paso + 1) % len(datos_simulados)
 
 # --- SIDEBAR ---
 with st.sidebar:
     st.image("https://upload.wikimedia.org/wikipedia/en/thumb/3/36/Scuderia_Ferrari_logo.svg/1200px-Scuderia_Ferrari_logo.svg.png", width=120)
-    st.title("🏁 GESTIÓN CLS")
-    st.write(f"👤 **Administrador:** Gustavo Diaz")
+    st.title("🏁 SCUDERIA CLS")
+    st.write(f"👤 **Admin:** Gustavo Diaz")
+    if st.button("🚀 SIMULAR SIGUIENTE AUTO"): siguiente()
     st.write("---")
-    if st.button("🚀 SIMULADOR: SIGUIENTE VEHÍCULO"):
-        siguiente_vehiculo()
-    
-    st.write("---")
-    st.caption("Arquitectura Escalable 2026")
+    st.caption("Arquitectura de Alta Disponibilidad")
 
 # --- CUERPO PRINCIPAL ---
 caso = datos_simulados[st.session_state.paso]
+es_noche = int(caso['hora'].split(':')[0]) >= 20 or int(caso['hora'].split(':')[0]) <= 6
 
 st.title("🏎️ CLS SMART DIAGNOSTIC")
-st.subheader(f"Vehículo en Proceso: {caso['auto']}")
 
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.write("### 🔍 Análisis de Motor")
-    if st.button("🧬 INICIAR ESCANEO SCUDERIA"):
-        with st.spinner("Procesando telemetría..."):
+    st.write("### 🔍 Reporte de Telemetría")
+    st.write(f"📅 **Fecha:** {caso['fecha']} | ⌚ **Hora:** {caso['hora']}")
+    st.write(f"📍 **Ubicación:** {caso['depto']}, {caso['pueblo']}")
+    st.write(f"🛣️ **Referencia:** {caso['calle']}")
+    
+    if st.button("🧬 EJECUTAR ESCANEO SCUDERIA"):
+        with st.spinner("Analizando protocolos OBD2..."):
             time.sleep(1.5)
-            st.error(f"❌ FALLA DETECTADA: {caso['falla']}")
-            
-        st.write("### 🏥 Red de Talleres Afiliados")
-        for t in caso['talleres']:
-            with st.expander(f"📍 {t['nombre']}"):
-                st.write(f"📞 Teléfono: {t['tel']}")
-                st.write(f"🏠 Dirección: {t['dir']}")
-                st.button(f"Agendar en {t['nombre']}", key=t['nombre'])
+            st.error(f"❌ FALLA: {caso['falla']}")
+        
+        st.write("### 🛠️ Costos Estimados")
+        st.info(f"📦 **Repuesto (ML):** ${caso['precio_repuesto']} UYU")
+        st.info(f"👨‍🔧 **Mano de Obra:** ${caso['mano_obra']} UYU")
+        st.link_button("🛒 VER REPUESTO EN MERCADO LIBRE", caso['repuesto_link'])
 
 with col2:
-    st.write("### 📍 Ubicación GPS GPS")
-    # Crear un mapa con la ubicación del auto y los talleres
+    st.write("### 📍 Mapa de Auxilio")
     map_data = pd.DataFrame({'lat': [caso['lat']], 'lon': [caso['lon']]})
-    st.map(map_data, zoom=12)
-    st.info(f"El vehículo se encuentra detenido cerca de las coordenadas: {caso['lat']}, {caso['lon']}")
+    st.map(map_data, zoom=13)
+    
+    st.write("---")
+    tipo_turno = "🌙 TALLERES DE EMERGENCIA NOCTURNA" if es_noche else "☀️ TALLERES HORARIO CENTRAL"
+    st.subheader(tipo_turno)
+    
+    for t in caso['talleres']:
+        with st.expander(f"📍 {t['nombre']}"):
+            st.write(f"📞 Contacto: {t['tel']}")
+            st.button(f"Pedir Grúa a {t['nombre']}", key=t['nombre'])
 
 st.write("---")
-mensaje_cliente = f"Resumen SCUDERIA CLS: Se detectó falla {caso['falla']} en su {caso['auto']}. Vea los talleres más cercanos en el link."
-st.link_button("📩 ENVIAR DIAGNÓSTICO AL CLIENTE", f"https://wa.me/?text={mensaje_cliente}", type="primary")
-
-st.caption("Propiedad Intelectual de Leonardo Olivera | Basado en Estándares de Rendimiento y Seguridad.")
+msg = f"Reporte CLS - {caso['auto']}: Falla {caso['falla']} detectada en {caso['calle']}. Taller recomendado: {caso['talleres'][0]['nombre']}."
+st.link_button("📩 ENVIAR INFORME DE EMERGENCIA AL CLIENTE", f"https://wa.me/?text={msg}", type="primary")
