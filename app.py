@@ -1,70 +1,85 @@
 import streamlit as st
 import scuderia_core
-import time
 import pandas as pd
+import time
 
-# Estética Senna: Amarillo (#FDB927), Verde (#009B3A), Azul (#002776)
-st.set_page_config(page_title="Scuderia CLS - Senna Edition", layout="wide")
+st.set_page_config(page_title="Scuderia CLS - Control Global", layout="wide")
 
+# ESTILO SENNA + NEGRO METALIZADO + PUNTO GPS TITILANTE
 st.markdown("""
     <style>
-    .main { background-color: #0d0d0d; color: #ffffff; }
-    .stButton>button { 
-        background-color: #FDB927; color: #002776; 
-        border: 2px solid #009B3A; font-weight: bold; border-radius: 15px;
+    .main { background-color: #050505; color: white; }
+    .stButton>button { background-color: #FDB927; color: #002776; border-radius: 10px; font-weight: bold; width: 100%; }
+    .card { background: linear-gradient(145deg, #111, #222); border: 1px solid #009B3A; padding: 15px; border-radius: 15px; margin-bottom: 10px; }
+    
+    /* Efecto punto GPS titilante */
+    .gps-dot {
+        height: 15px; width: 15px; background-color: #00ff00;
+        border-radius: 50%; display: inline-block;
+        box-shadow: 0 0 10px #00ff00;
+        animation: pulse 1.5s infinite;
     }
-    .metalic-card {
-        background: linear-gradient(145deg, #1a1a1a, #262626);
-        border: 1px solid #FDB927; padding: 20px; border-radius: 15px;
+    @keyframes pulse {
+        0% { transform: scale(0.9); opacity: 0.7; }
+        70% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 20px #00ff00; }
+        100% { transform: scale(0.9); opacity: 0.7; }
     }
     </style>
     """, unsafe_allow_html=True)
 
-# Selección de Usuario (Simulando el inicio de sesión)
-user = scuderia_core.auto_prueba.obtener_cliente_random()
+# Lógica para cambiar de cliente (0 a 29)
+if 'user_index' not in st.session_state:
+    st.session_state.user_index = 0
 
-st.title("🏎️ SCUDERIA CLS - DASHBOARD")
-st.markdown(f"**Desarrollador:** Leonardo Olivera | **Sede:** Paysandú")
+def siguiente_cliente():
+    st.session_state.user_index = (st.session_state.user_index + 1) % 30
 
-col_info, col_map = st.columns([1, 1.5])
+# Obtener datos del cliente actual
+cliente = scuderia_core.auto_prueba.obtener_cliente(st.session_state.user_index)
 
-with col_info:
-    st.markdown('<div class="metalic-card">', unsafe_allow_html=True)
-    st.header("👤 DATOS DEL CLIENTE")
-    st.write(f"**Nombre:** {user['nombre']}")
-    st.write(f"**Vehículo:** {user['auto']} {user['img']}")
-    st.write(f"**Ubicación:** {user['ciudad']}, {user['pais']}")
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.write("### 🛠️ ELEGIR ESCANEO")
-    opcion = st.selectbox("Seleccione sistema:", ["Motor", "Sensores", "Electricidad", "Aire"])
-    
-    if st.button("🏁 INICIAR ESCANEO PROFESIONAL"):
-        with st.spinner("Procesando telemetría..."):
-            time.sleep(2)
-            res = scuderia_core.auto_prueba.motor_diagnostico(opcion)
-            st.warning(f"RESULTADO: {res['desc']}")
-            
-            # Precios dinámicos
-            st.write("### 🛒 COSTO ESTIMADO REPUESTO:")
-            st.write(f"🇺🇾 Uruguay: **${res['precio_uy']} UYU**")
-            st.write(f"🇦🇷 Argentina: **${res['precio_ar']} ARS**")
-            st.markdown(f"[Ver repuesto en Mercado Libre](https://www.mercadolibre.com.uy/s/{opcion})")
-            
-            st.button("📄 ENVIAR REPORTE PDF AL CELULAR (WhatsApp)")
+# ENCABEZADO
+st.title("🏎️ SCUDERIA CLS - TELEMETRÍA GLOBAL")
+st.button("⏭️ SIGUIENTE CLIENTE DE PRUEBA (Demo 1-30)", on_click=siguiente_cliente)
 
-with col_map:
-    st.write("### 📍 UBICACIÓN Y TALLERES AFILIADOS")
-    # Mapa centrado en la zona (simulado)
-    map_data = pd.DataFrame({'lat': [-32.32], 'lon': [-58.08]})
-    st.map(map_data)
-    
-    st.markdown('<div style="border: 2px solid #e60000; padding:10px; border-radius:10px;">', unsafe_allow_html=True)
-    st.error("🆘 TALLERES AFILIADOS DE EMERGENCIA")
-    st.write("📞 **Taller 'El Flaco' (Paysandú):** 099 123 456")
-    st.write("📞 **Electromecánica 'Centro' (Young):** 098 765 432")
-    st.write("📞 **Servicio 'Sur' (Colón, AR):** +54 3447 112233")
+col1, col2 = st.columns([1, 1.5])
+
+with col1:
+    st.markdown(f'<div class="card">', unsafe_allow_html=True)
+    st.subheader("👤 PERFIL DEL USUARIO")
+    st.write(f"**Nombre:** {cliente['nombre']}")
+    st.write(f"**Vehículo:** {cliente['auto']}")
+    st.write(f"**País:** {cliente['pais']}")
+    st.write(f"**Ubicación:** {cliente['ciudad']}")
+    st.markdown(f'UBICACIÓN REAL <span class="gps-dot"></span>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-st.write("---")
-st.caption("Sistema Scuderia CLS - Agilidad, Seguridad y Disponibilidad en la Nube.")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("⛽ SERVICIOS CERCANOS")
+    dist = round(random.uniform(1.2, 5.5), 1)
+    st.success(f"⛽ Estación ANCAP/YPF abierta a {dist} km")
+    st.info("☕ Parador con Baños y Wi-Fi a 500m")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if st.button("🔍 ESCANEAR AHORA"):
+        st.warning(f"⚠️ NECESITA: {cliente['repuesto']}")
+        st.write("---")
+        st.subheader("🛒 COMPARATIVA DE PRECIOS")
+        tiendas = scuderia_core.auto_prueba.obtener_casas_repuestos(cliente['repuesto'], cliente['pais'])
+        for t in tiendas:
+            st.write(f"🏢 **{t['local']}**")
+            st.write(f"💰 Precio: {t['moneda']} {t['precio']} | 🌏 Origen: {t['origen']}")
+            st.write("---")
+        st.button("📄 ENVIAR PDF A MI WHATSAPP")
+
+with col2:
+    st.write("### 📍 RASTREO SATELITAL (GPS)")
+    # Creamos el mapa con la ubicación del cliente actual
+    map_df = pd.DataFrame({'lat': [cliente['lat']], 'lon': [cliente['lon']]})
+    st.map(map_df, zoom=12)
+    
+    st.error("🆘 TALLERES AFILIADOS SCUDERIA CLS (EMERGENCIA)")
+    st.write("🚩 **Auxilio Mecánico Paysandú:** 099 000 111")
+    st.write("🚩 **Taller Santiago (Chile):** +56 9 8888 7777")
+    st.write("🚩 **Servicio Ruta 3 (Argentina):** +54 11 2222 3333")
+
+st.caption(f"Visualizando cliente {st.session_state.user_index + 1} de 30 | Desarrollado por Leonardo Olivera")
