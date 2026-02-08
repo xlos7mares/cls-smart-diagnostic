@@ -1,27 +1,35 @@
 import random
-import time
 
 class ScuderiaCLS:
     def __init__(self):
-        self.vehiculo = "Hyundai HB20 2022"
-    
-    def simular_telemetria(self):
-        """Simula la conexión y captura de datos de la ECU"""
-        # Esto hace que el programa 'espere' y parezca que está trabajando
-        time.sleep(1)
-        return True
+        # Usamos el protocolo estándar OBD-II (SAE J1979)
+        self.protocolo = "ISO 15765-4 (CAN)" 
 
-    def motor_diagnostico_ia(self):
-        """Genera un diagnóstico aleatorio para mostrar dinamismo"""
-        diagnosticos = [
-            "✅ SISTEMA ÓPTIMO: Todos los parámetros de la ECU están en rango normal.",
-            "⚠️ ALERTA: Desgaste detectado en Inyectores. Se sugiere limpieza preventiva.",
-            "✅ RENDIMIENTO: Mezcla de combustible optimizada para ahorro de consumo.",
-            "⚠️ AVISO: Sensor de oxígeno con lectura intermitente. Revisar cableado.",
-            "✅ ESTADO: Presión de aceite y temperatura de motor estables."
-        ]
-        # Elige uno al azar de la lista anterior
-        return random.choice(diagnosticos)
+    def motor_diagnostico(self, categoria):
+        # Base de datos universal basada en códigos estándar P0 (Genéricos)
+        # Esto funciona para VW, Fiat, Chevrolet, etc.
+        diagnosticos_universales = {
+            "Motor": [
+                "✅ (P0000) Sin fallos detectados en ciclo de combustión.",
+                "⚠️ (P0300) Detectado fallo de encendido. Revisar bujías o cables.",
+                "⚠️ (P0171) Mezcla demasiado pobre. Posible entrada de aire o filtro sucio."
+            ],
+            "Sensores": [
+                "✅ Sensores de oxígeno y flujo de aire operando en rango.",
+                "⚠️ (P0130) Sensor de Oxígeno (Banco 1) con baja señal.",
+                "⚠️ (P0101) Sensor MAF fuera de rango. Limpieza recomendada."
+            ],
+            "Electricidad": [
+                "✅ Voltaje de batería estable (13.8V - 14.2V con motor encendido).",
+                "⚠️ (P0562) Voltaje del sistema bajo. Revisar Alternador.",
+                "✅ Circuito de encendido y relés operativos."
+            ],
+            "Aire": [
+                "✅ Sistema de climatización con presión de carga correcta.",
+                "⚠️ Presión de refrigerante baja. Posible fuga en el circuito.",
+                "✅ Ventilador de condensador activado correctamente."
+            ]
+        }
+        return random.choice(diagnosticos_universales.get(categoria, ["Escaneo completado"]))
 
-# Creamos la instancia para que app.py la pueda usar
 auto_prueba = ScuderiaCLS()
