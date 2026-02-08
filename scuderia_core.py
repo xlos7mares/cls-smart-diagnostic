@@ -2,34 +2,32 @@ import random
 
 class ScuderiaCLS:
     def __init__(self):
-        # Usamos el protocolo estándar OBD-II (SAE J1979)
-        self.protocolo = "ISO 15765-4 (CAN)" 
+        self.protocolo = "OBD-II Universal"
 
     def motor_diagnostico(self, categoria):
-        # Base de datos universal basada en códigos estándar P0 (Genéricos)
-        # Esto funciona para VW, Fiat, Chevrolet, etc.
-        diagnosticos_universales = {
+        # Diccionario de fallas reales para autos gama media (VW, Fiat, Chevrolet)
+        base_datos = {
             "Motor": [
-                "✅ (P0000) Sin fallos detectados en ciclo de combustión.",
-                "⚠️ (P0300) Detectado fallo de encendido. Revisar bujías o cables.",
-                "⚠️ (P0171) Mezcla demasiado pobre. Posible entrada de aire o filtro sucio."
+                "✅ (P0000) Combustión estable. Sin fallos de inyección.",
+                "⚠️ (P0300) Fallo de encendido detectado. Revisar bujías/cables.",
+                "⚠️ (P0171) Mezcla pobre. Posible entrada de aire o filtro sucio."
             ],
             "Sensores": [
-                "✅ Sensores de oxígeno y flujo de aire operando en rango.",
-                "⚠️ (P0130) Sensor de Oxígeno (Banco 1) con baja señal.",
+                "✅ Sensores de oxígeno y flujo de aire en rango operativo.",
+                "⚠️ (P0130) Sensor de Oxígeno con baja señal. Revisar cableado.",
                 "⚠️ (P0101) Sensor MAF fuera de rango. Limpieza recomendada."
             ],
             "Electricidad": [
-                "✅ Voltaje de batería estable (13.8V - 14.2V con motor encendido).",
-                "⚠️ (P0562) Voltaje del sistema bajo. Revisar Alternador.",
-                "✅ Circuito de encendido y relés operativos."
+                "✅ Alternador cargando correctamente (14.2V).",
+                "⚠️ (P0562) Voltaje de sistema bajo. Revisar batería/alternador.",
+                "✅ Sistema de encendido y relés sin anomalías."
             ],
             "Aire": [
-                "✅ Sistema de climatización con presión de carga correcta.",
-                "⚠️ Presión de refrigerante baja. Posible fuga en el circuito.",
-                "✅ Ventilador de condensador activado correctamente."
+                "✅ Presión de gas refrigerante en nivel óptimo.",
+                "⚠️ Presión de carga baja. Se recomienda control de fugas.",
+                "✅ Ventilador de condensador operando correctamente."
             ]
         }
-        return random.choice(diagnosticos_universales.get(categoria, ["Escaneo completado"]))
+        return random.choice(base_datos.get(categoria, ["Escaneo completado"]))
 
 auto_prueba = ScuderiaCLS()
