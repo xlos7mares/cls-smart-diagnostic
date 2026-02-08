@@ -2,37 +2,70 @@ import random
 
 class ScuderiaCLS:
     def __init__(self):
-        # Base de datos de 30 clientes reales (Uruguay, Argentina, Chile)
-        self.base_clientes = [
-            {"id": 1, "nombre": "Juan Rodríguez", "auto": "VW Gol 1.6", "pais": "Uruguay", "ciudad": "Paysandú, Ruta 3 Km 370", "lat": -32.31, "lon": -58.08, "repuesto": "Bomba de Agua"},
-            {"id": 2, "nombre": "Matías Gauto", "auto": "Fiat Palio", "pais": "Argentina", "ciudad": "Colón, Calle 12", "lat": -32.22, "lon": -58.14, "repuesto": "Bujías Bosch"},
-            {"id": 3, "nombre": "Diego Retamales", "auto": "Chevrolet Corsa", "pais": "Chile", "ciudad": "Santiago, Av. Providencia", "lat": -33.44, "lon": -70.66, "repuesto": "Sensor MAF"},
-            {"id": 4, "nombre": "Ana Clara Sosa", "auto": "Peugeot 206", "pais": "Uruguay", "ciudad": "Salto, Costanera Norte", "lat": -31.38, "lon": -57.96, "repuesto": "Bobina de Ignición"},
-            # ... (Simularemos la rotación de los 30 en la App)
-        ]
-        # Generar el resto hasta 30 automáticamente para la demo
-        for i in range(5, 31):
+        self.base_clientes = []
+        marcas = ["VW Gol", "Fiat Palio", "Chevrolet Corsa", "Renault Clio", "Ford Ka"]
+        tipos_motor = ["Inyección Electrónica", "Carburador"]
+        
+        # Generamos los 30 ejemplos con diversidad técnica
+        for i in range(1, 31):
             pais = random.choice(["Uruguay", "Argentina", "Chile"])
+            motor = random.choice(tipos_motor)
             self.base_clientes.append({
                 "id": i,
                 "nombre": f"Cliente Demo {i}",
-                "auto": random.choice(["Fiat Uno", "VW Suran", "Toyota Yaris"]),
+                "auto": f"{random.choice(marcas)} ({motor})",
+                "motor_tipo": motor,
                 "pais": pais,
-                "ciudad": f"Zona Rural {pais}, Km {random.randint(10, 500)}",
+                "ciudad": f"Zona {random.randint(1,9)}, Km {random.randint(10, 400)}",
                 "lat": -32.0 + random.uniform(-2, 2),
                 "lon": -58.0 + random.uniform(-2, 2) if pais != "Chile" else -70.0 + random.uniform(-1, 1),
-                "repuesto": "Filtro de Aceite"
             })
 
     def obtener_cliente(self, indice):
         return self.base_clientes[indice % len(self.base_clientes)]
 
-    def obtener_casas_repuestos(self, repuesto, pais):
+    def generar_escaneo_completo(self, motor_tipo):
+        # Lógica de fallas aleatorias por sistema
+        sistemas = {
+            "Aire Acondicionado": [
+                "✅ Presión de gas óptima. Enfriamiento a 5°C.",
+                "⚠️ FALLA: Presión baja. Posible fuga en condensador. Repuesto: Filtro deshidratador.",
+                "❌ FALLA: Compresor no acopla. Revisar embrague electromagnético."
+            ],
+            "Luces y Visibilidad": [
+                "✅ Todas las luminarias operativas.",
+                "⚠️ AVISO: Lámpara H4 izquierda quemada.",
+                "❌ FALLA: Motor de limpiaparabrisas sin retorno. Revisar temporizador."
+            ],
+            "Electricidad": [
+                "✅ Alternador cargando a 14.2V. Batería OK.",
+                "⚠️ ALERTA: Batería con celdas agotadas (11.5V). Cambio recomendado.",
+                "⚠️ FALLA: Regulador de voltaje del alternador inestable."
+            ],
+            "Motor/Inyección": [
+                "✅ Sincronización de encendido correcta.",
+                "⚠️ (Inyección) Limpieza de inyectores necesaria por obstrucción.",
+                "⚠️ (Carburador) Flotador trabado o chicler de baja tapado.",
+                "❌ FALLA: Sensor de posición de cigüeñal (CKP) intermitente."
+            ]
+        }
+        
+        reporte = {}
+        for sistema, opciones in sistemas.items():
+            # Filtramos según el tipo de motor
+            opcion = random.choice(opciones)
+            if "Inyección" in motor_tipo and "Carburador" in opcion: continue
+            if "Carburador" in motor_tipo and "Inyección" in opcion: continue
+            reporte[sistema] = opcion
+            
+        return reporte
+
+    def obtener_precios_repuesto(self, falla, pais):
         moneda = "UYU" if pais == "Uruguay" else "ARS" if pais == "Argentina" else "CLP"
         return [
-            {"local": "Repuestos 'El Rayo'", "precio": random.randint(1500, 5000), "moneda": moneda, "origen": "Brasil (Original)"},
-            {"local": "Euro-Partes", "precio": random.randint(1200, 4500), "moneda": moneda, "origen": "Alemania (Alternativo)"},
-            {"local": "Amazon Global", "precio": random.randint(20, 100), "moneda": "USD", "origen": "China (Genérico)"}
+            {"casa": "Repuestos 'La Tuerca'", "precio": random.randint(1200, 4000), "moneda": moneda, "orig": "Brasil"},
+            {"casa": "Global Parts", "precio": random.randint(900, 3500), "moneda": moneda, "orig": "China"},
+            {"casa": "Centro Repuesto", "precio": random.randint(2000, 6000), "moneda": moneda, "orig": "Original"}
         ]
 
 auto_prueba = ScuderiaCLS()
