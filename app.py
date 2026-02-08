@@ -2,78 +2,46 @@ import streamlit as st
 import scuderia_core
 import time
 
-# Configuración de la página
-st.set_page_config(page_title="Scuderia CLS - F1 Edition", page_icon="🏎️", layout="wide")
+# Configuración y Estilo F1
+st.set_page_config(page_title="Scuderia CLS", page_icon="🏎️")
 
-# ESTILO FÓRMULA 1 (CSS Personalizado)
 st.markdown("""
     <style>
-    .main {
-        background-color: #1a1a1a;
-        color: #ffffff;
+    .main { background-color: #1a1a1a; color: white; }
+    .stButton>button { 
+        background-color: #e60000; color: white; 
+        border-radius: 10px; font-weight: bold; width: 100%;
     }
-    .stButton>button {
-        background-color: #e60000; /* Rojo Ferrari */
-        color: white;
-        border-radius: 5px;
-        border: 2px solid #ffffff;
-        font-weight: bold;
-        height: 3em;
-        width: 100%;
-    }
-    .stButton>button:hover {
-        background-color: #ff3333;
-        border: 2px solid #e60000;
-    }
-    h1 {
-        color: #e60000;
-        font-family: 'Arial Black', sans-serif;
-        text-transform: uppercase;
-        border-bottom: 3px solid #e60000;
-    }
-    .status-box {
-        background-color: #262626;
-        padding: 20px;
-        border-left: 5px solid #e60000;
-        border-radius: 10px;
-    }
+    h1 { color: #e60000; border-bottom: 2px solid #e60000; }
     </style>
     """, unsafe_allow_html=True)
 
-# Encabezado con tu nuevo título
-st.title("🏎️ SCUDERIA CLS - TELEMETRY")
-st.markdown(f"### **Desarrollador de Software:** Leonardo Olivera")
-st.write("**Localización:** Sede Paysandú | **Sistema:** Cloud-Ready 2026")
+st.title("🏎️ SCUDERIA CLS - SMART SCAN")
+st.markdown("### Desarrollador de Software: Leonardo Olivera")
+st.info("Protocolo: OBD-II Universal (Compatible 2000-2026)")
 
-st.markdown("---")
+# Función de escaneo corregida
+def ejecutar_escaneo(nombre, cat):
+    with st.status(f"Escaneando {nombre}...", expanded=True) as s:
+        time.sleep(1)
+        # LLAMADA CORREGIDA AQUÍ:
+        res = scuderia_core.auto_prueba.motor_diagnostico(cat)
+        s.update(label=f"{nombre} Analizado", state="complete")
+    st.success(res)
 
-# Layout de dos columnas para que parezca un tablero de carreras
+st.write("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown('<div class="status-box">', unsafe_allow_html=True)
-    st.write("### 🛠️ CONTROL DE UNIDAD")
-    st.info("Vehículo: **HYUNDAI HB20 (2022)**")
-    
-    if st.button("🏁 INICIAR ESCANEO MOLECULAR"):
-        with st.status("Conectando con ECU...", expanded=True) as status:
-            st.write("⚡ Sincronizando sensores CAN-BUS...")
-            time.sleep(1)
-            st.write("📊 Analizando flujo de datos en la Nube...")
-            resultado = scuderia_core.auto_prueba.motor_diagnostico_ia()
-            time.sleep(1)
-            status.update(label="¡CONEXIÓN EXITOSA!", state="complete", expanded=False)
-        
-        st.success(f"**DIAGNÓSTICO FINAL:** {resultado}")
-        if "SISTEMA ÓPTIMO" in resultado:
-            st.balloons()
-    st.markdown('</div>', unsafe_allow_html=True)
+    if st.button("🔧 Motor"): ejecutar_escaneo("Motor", "Motor")
+    if st.button("⚡ Electricidad"): ejecutar_escaneo("Sistema Eléctrico", "Electricidad")
 
 with col2:
-    st.write("### 📈 RENDIMIENTO EN NUBE")
-    # Simulación de métricas de F1
-    st.metric(label="Latencia de Respuesta", value="14ms", delta="-2ms")
-    st.metric(label="Disponibilidad del Sistema", value="99.9%", delta="Estable")
+    if st.button("🌡️ Sensores"): ejecutar_escaneo("Sensores", "Sensores")
+    if st.button("❄️ Aire Acondicionado"): ejecutar_escaneo("Climatización", "Aire")
 
-st.markdown("---")
-st.caption("Tecnología de Alto Rendimiento | Agilidad • Escalabilidad • Seguridad")
+st.write("---")
+if st.button("🚨 ESCANEO TOTAL DEL VEHÍCULO"):
+    st.balloons()
+    for c in ["Motor", "Sensores", "Electricidad", "Aire"]:
+        st.write(f"**{c}:** {scuderia_core.auto_prueba.motor_diagnostico(c)}")
