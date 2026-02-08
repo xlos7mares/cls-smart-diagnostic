@@ -2,32 +2,24 @@ import random
 
 class ScuderiaCLS:
     def __init__(self):
-        self.protocolo = "OBD-II Universal"
+        # Datos simulados de 30 clientes (Uruguay y Argentina)
+        self.clientes = [
+            {"nombre": "Carlos Pérez", "auto": "VW Gol 2005", "pais": "Uruguay", "ciudad": "Paysandú", "img": "🚗"},
+            {"nombre": "Marta Silva", "auto": "Fiat Palio 2010", "pais": "Argentina", "ciudad": "Colón", "img": "🚙"},
+            {"nombre": "Jorge Sosa", "auto": "Chevrolet Corsa 2008", "pais": "Uruguay", "ciudad": "Young", "img": "🏎️"},
+            # ... (el sistema elegirá uno al azar para la demo)
+        ]
+        
+    def obtener_cliente_random(self):
+        return random.choice(self.clientes)
 
     def motor_diagnostico(self, categoria):
-        # Diccionario de fallas reales para autos gama media (VW, Fiat, Chevrolet)
-        base_datos = {
-            "Motor": [
-                "✅ (P0000) Combustión estable. Sin fallos de inyección.",
-                "⚠️ (P0300) Fallo de encendido detectado. Revisar bujías/cables.",
-                "⚠️ (P0171) Mezcla pobre. Posible entrada de aire o filtro sucio."
-            ],
-            "Sensores": [
-                "✅ Sensores de oxígeno y flujo de aire en rango operativo.",
-                "⚠️ (P0130) Sensor de Oxígeno con baja señal. Revisar cableado.",
-                "⚠️ (P0101) Sensor MAF fuera de rango. Limpieza recomendada."
-            ],
-            "Electricidad": [
-                "✅ Alternador cargando correctamente (14.2V).",
-                "⚠️ (P0562) Voltaje de sistema bajo. Revisar batería/alternador.",
-                "✅ Sistema de encendido y relés sin anomalías."
-            ],
-            "Aire": [
-                "✅ Presión de gas refrigerante en nivel óptimo.",
-                "⚠️ Presión de carga baja. Se recomienda control de fugas.",
-                "✅ Ventilador de condensador operando correctamente."
-            ]
+        fallas = {
+            "Motor": {"desc": "Falla de Bobina P0301", "precio_uy": 2500, "precio_ar": 45000},
+            "Sensores": {"desc": "Sensor Oxígeno P0130", "precio_uy": 3800, "precio_ar": 62000},
+            "Electricidad": {"desc": "Alternador bajo voltaje", "precio_uy": 8500, "precio_ar": 120000},
+            "Aire": {"desc": "Fuga gas refrigerante", "precio_uy": 4200, "precio_ar": 75000}
         }
-        return random.choice(base_datos.get(categoria, ["Escaneo completado"]))
+        return fallas.get(categoria)
 
 auto_prueba = ScuderiaCLS()
