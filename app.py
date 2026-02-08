@@ -1,42 +1,79 @@
 import streamlit as st
-import scuderia_core  # Conectamos con el motor que acabamos de actualizar
+import scuderia_core
+import time
 
-# Configuración de la pestaña del navegador
-st.set_page_config(page_title="Scuderia CLS - Diagnóstico", page_icon="🏎️")
+# Configuración de la página
+st.set_page_config(page_title="Scuderia CLS - F1 Edition", page_icon="🏎️", layout="wide")
 
-# Encabezado profesional
-st.title("🏎️ Scuderia CLS - Panel de Control")
-st.markdown(f"**Operador:** Ing. Leonardo Olivera | **Ubicación:** Paysandú")
-st.write("---")
+# ESTILO FÓRMULA 1 (CSS Personalizado)
+st.markdown("""
+    <style>
+    .main {
+        background-color: #1a1a1a;
+        color: #ffffff;
+    }
+    .stButton>button {
+        background-color: #e60000; /* Rojo Ferrari */
+        color: white;
+        border-radius: 5px;
+        border: 2px solid #ffffff;
+        font-weight: bold;
+        height: 3em;
+        width: 100%;
+    }
+    .stButton>button:hover {
+        background-color: #ff3333;
+        border: 2px solid #e60000;
+    }
+    h1 {
+        color: #e60000;
+        font-family: 'Arial Black', sans-serif;
+        text-transform: uppercase;
+        border-bottom: 3px solid #e60000;
+    }
+    .status-box {
+        background-color: #262626;
+        padding: 20px;
+        border-left: 5px solid #e60000;
+        border-radius: 10px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-# Sección principal
-st.subheader("Monitoreo de Telemetría en Tiempo Real")
-st.info("Vehículo detectado: **Hyundai HB20 2022**")
+# Encabezado con tu nuevo título
+st.title("🏎️ SCUDERIA CLS - TELEMETRY")
+st.markdown(f"### **Desarrollador de Software:** Leonardo Olivera")
+st.write("**Localización:** Sede Paysandú | **Sistema:** Cloud-Ready 2026")
 
-# El botón que pediste con el nuevo nombre
-if st.button("🚀 Iniciar Escaneo de Sensores"):
-    # Usamos un 'status' para que Gustavo vea que el programa está 'pensando'
-    with st.status("Conectando con la ECU del vehículo...", expanded=True) as status:
-        st.write("Estableciendo conexión vía CAN-BUS...")
-        scuderia_core.auto_prueba.simular_telemetria()
-        
-        st.write("Descargando logs de fallas almacenados...")
-        time_sim = 1 # Pequeña pausa estética
-        
-        st.write("Analizando datos con el motor de IA de Scuderia...")
-        # Obtenemos el resultado real del motor
-        resultado = scuderia_core.auto_prueba.motor_diagnostico_ia()
-        
-        # Cambiamos el estado a completado
-        status.update(label="¡Escaneo Completado con éxito!", state="complete", expanded=False)
+st.markdown("---")
+
+# Layout de dos columnas para que parezca un tablero de carreras
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown('<div class="status-box">', unsafe_allow_html=True)
+    st.write("### 🛠️ CONTROL DE UNIDAD")
+    st.info("Vehículo: **HYUNDAI HB20 (2022)**")
     
-    # Mostramos el resultado final de forma destacada
-    st.success(f"**Resultado del Análisis:** {resultado}")
-    
-    # Efecto visual de globos si el sistema está bien (opcional, da un toque de éxito)
-    if "ÓPTIMO" in resultado:
-        st.balloons()
+    if st.button("🏁 INICIAR ESCANEO MOLECULAR"):
+        with st.status("Conectando con ECU...", expanded=True) as status:
+            st.write("⚡ Sincronizando sensores CAN-BUS...")
+            time.sleep(1)
+            st.write("📊 Analizando flujo de datos en la Nube...")
+            resultado = scuderia_core.auto_prueba.motor_diagnostico_ia()
+            time.sleep(1)
+            status.update(label="¡CONEXIÓN EXITOSA!", state="complete", expanded=False)
+        
+        st.success(f"**DIAGNÓSTICO FINAL:** {resultado}")
+        if "SISTEMA ÓPTIMO" in resultado:
+            st.balloons()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# Pie de página técnico
-st.write("---")
-st.caption("Arquitectura basada en Computación en la Nube: Agilidad, Escalabilidad y Disponibilidad.")
+with col2:
+    st.write("### 📈 RENDIMIENTO EN NUBE")
+    # Simulación de métricas de F1
+    st.metric(label="Latencia de Respuesta", value="14ms", delta="-2ms")
+    st.metric(label="Disponibilidad del Sistema", value="99.9%", delta="Estable")
+
+st.markdown("---")
+st.caption("Tecnología de Alto Rendimiento | Agilidad • Escalabilidad • Seguridad")
