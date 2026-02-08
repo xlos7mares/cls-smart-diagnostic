@@ -1,47 +1,70 @@
 import streamlit as st
 import scuderia_core
 import time
+import pandas as pd
 
-# Configuración y Estilo F1
-st.set_page_config(page_title="Scuderia CLS", page_icon="🏎️")
+# Estética Senna: Amarillo (#FDB927), Verde (#009B3A), Azul (#002776)
+st.set_page_config(page_title="Scuderia CLS - Senna Edition", layout="wide")
 
 st.markdown("""
     <style>
-    .main { background-color: #1a1a1a; color: white; }
+    .main { background-color: #0d0d0d; color: #ffffff; }
     .stButton>button { 
-        background-color: #e60000; color: white; 
-        border-radius: 10px; font-weight: bold; width: 100%;
+        background-color: #FDB927; color: #002776; 
+        border: 2px solid #009B3A; font-weight: bold; border-radius: 15px;
     }
-    h1 { color: #e60000; border-bottom: 2px solid #e60000; }
+    .metalic-card {
+        background: linear-gradient(145deg, #1a1a1a, #262626);
+        border: 1px solid #FDB927; padding: 20px; border-radius: 15px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🏎️ SCUDERIA CLS - SMART SCAN")
-st.markdown("### Desarrollador de Software: Leonardo Olivera")
-st.info("Protocolo: OBD-II Universal (Compatible 2000-2026)")
+# Selección de Usuario (Simulando el inicio de sesión)
+user = scuderia_core.auto_prueba.obtener_cliente_random()
 
-# Función de escaneo corregida
-def ejecutar_escaneo(nombre, cat):
-    with st.status(f"Escaneando {nombre}...", expanded=True) as s:
-        time.sleep(1)
-        # LLAMADA CORREGIDA AQUÍ:
-        res = scuderia_core.auto_prueba.motor_diagnostico(cat)
-        s.update(label=f"{nombre} Analizado", state="complete")
-    st.success(res)
+st.title("🏎️ SCUDERIA CLS - DASHBOARD")
+st.markdown(f"**Desarrollador:** Leonardo Olivera | **Sede:** Paysandú")
+
+col_info, col_map = st.columns([1, 1.5])
+
+with col_info:
+    st.markdown('<div class="metalic-card">', unsafe_allow_html=True)
+    st.header("👤 DATOS DEL CLIENTE")
+    st.write(f"**Nombre:** {user['nombre']}")
+    st.write(f"**Vehículo:** {user['auto']} {user['img']}")
+    st.write(f"**Ubicación:** {user['ciudad']}, {user['pais']}")
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.write("### 🛠️ ELEGIR ESCANEO")
+    opcion = st.selectbox("Seleccione sistema:", ["Motor", "Sensores", "Electricidad", "Aire"])
+    
+    if st.button("🏁 INICIAR ESCANEO PROFESIONAL"):
+        with st.spinner("Procesando telemetría..."):
+            time.sleep(2)
+            res = scuderia_core.auto_prueba.motor_diagnostico(opcion)
+            st.warning(f"RESULTADO: {res['desc']}")
+            
+            # Precios dinámicos
+            st.write("### 🛒 COSTO ESTIMADO REPUESTO:")
+            st.write(f"🇺🇾 Uruguay: **${res['precio_uy']} UYU**")
+            st.write(f"🇦🇷 Argentina: **${res['precio_ar']} ARS**")
+            st.markdown(f"[Ver repuesto en Mercado Libre](https://www.mercadolibre.com.uy/s/{opcion})")
+            
+            st.button("📄 ENVIAR REPORTE PDF AL CELULAR (WhatsApp)")
+
+with col_map:
+    st.write("### 📍 UBICACIÓN Y TALLERES AFILIADOS")
+    # Mapa centrado en la zona (simulado)
+    map_data = pd.DataFrame({'lat': [-32.32], 'lon': [-58.08]})
+    st.map(map_data)
+    
+    st.markdown('<div style="border: 2px solid #e60000; padding:10px; border-radius:10px;">', unsafe_allow_html=True)
+    st.error("🆘 TALLERES AFILIADOS DE EMERGENCIA")
+    st.write("📞 **Taller 'El Flaco' (Paysandú):** 099 123 456")
+    st.write("📞 **Electromecánica 'Centro' (Young):** 098 765 432")
+    st.write("📞 **Servicio 'Sur' (Colón, AR):** +54 3447 112233")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 st.write("---")
-col1, col2 = st.columns(2)
-
-with col1:
-    if st.button("🔧 Motor"): ejecutar_escaneo("Motor", "Motor")
-    if st.button("⚡ Electricidad"): ejecutar_escaneo("Sistema Eléctrico", "Electricidad")
-
-with col2:
-    if st.button("🌡️ Sensores"): ejecutar_escaneo("Sensores", "Sensores")
-    if st.button("❄️ Aire Acondicionado"): ejecutar_escaneo("Climatización", "Aire")
-
-st.write("---")
-if st.button("🚨 ESCANEO TOTAL DEL VEHÍCULO"):
-    st.balloons()
-    for c in ["Motor", "Sensores", "Electricidad", "Aire"]:
-        st.write(f"**{c}:** {scuderia_core.auto_prueba.motor_diagnostico(c)}")
+st.caption("Sistema Scuderia CLS - Agilidad, Seguridad y Disponibilidad en la Nube.")
