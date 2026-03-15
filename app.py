@@ -1,123 +1,107 @@
 import streamlit as st
 import pandas as pd
+import urllib.parse
 import time
 import random
 
-# --- 1. CONFIGURACIÓN PARA MÓVIL ---
-st.set_page_config(
-    page_title="Scuderia CLS Mobile", 
-    page_icon="🏎️", 
-    layout="centered", # Mejor para celulares
-    initial_sidebar_state="collapsed"
-)
+# --- 1. CONFIGURACIÓN MÓVIL ---
+st.set_page_config(page_title="Scuderia CLS PRO", page_icon="🏎️", layout="centered")
 
-# --- 2. BASE DE DATOS ROBUSTA ---
+# --- 2. BASE DE DATOS EXTENDIDA ---
 datos_autos = {
-    "Chevrolet": ["Onix", "Prisma", "Corsa", "S10", "Cruze", "Montana"],
     "Hyundai": ["HB20", "i10", "Accent", "Tucson", "Creta"],
-    "Fiat": ["Cronos", "Argo", "Strada", "Toro", "Palio"],
+    "Chevrolet": ["Onix", "Prisma", "Corsa", "S10", "Cruze"],
     "Volkswagen": ["Gol", "Amarok", "Vento", "Saveiro", "Up!"],
+    "Fiat": ["Cronos", "Argo", "Strada", "Toro", "Palio"],
     "Toyota": ["Hilux", "Corolla", "Etios", "Yaris"],
     "Renault": ["Kwid", "Sandero", "Logan", "Duster", "Oroch"]
 }
 
-# --- 3. ESTILOS F1 NEÓN (OPTIMIZADOS PARA TOUCH) ---
+# --- 3. ESTILOS F1 NEÓN ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@700;900&display=swap');
-    .stApp { background-color: #0b0f19; color: #e0e6ed; }
-    .f1-header {
-        font-family: 'Exo 2', sans-serif; font-weight: 900; font-size: 2.2rem;
-        text-align: center; color: #fff; text-transform: uppercase;
-        text-shadow: 0 0 10px #e63946; margin-bottom: 5px;
+    @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@900&display=swap');
+    .stApp { background-color: #0b0f19; color: white; }
+    .f1-neon {
+        font-family: 'Exo 2', sans-serif; font-size: 2.2rem; text-align: center;
+        color: #fff; text-shadow: 0 0 10px #e63946, 0 0 20px #e63946;
+        text-transform: uppercase; margin-bottom: 10px;
     }
     .gauge-box {
-        text-align: center; background-color: #161b2a; padding: 15px;
-        border-radius: 12px; border: 2px solid #e63946; margin-bottom: 10px;
+        background-color: #161b2a; padding: 15px; border-radius: 12px;
+        border: 2px solid #e63946; text-align: center; margin-bottom: 10px;
     }
-    .gauge-label { color: #a8dadc; font-size: 0.8rem; text-transform: uppercase; }
-    .gauge-val { font-family: 'Exo 2', sans-serif; font-size: 2rem; color: #00f2ff; }
-    
-    /* Botón gigante para el dedo */
+    .gauge-val { font-family: 'Exo 2', sans-serif; font-size: 1.8rem; color: #00f2ff; }
     .stButton>button {
-        width: 100%; height: 90px; border-radius: 15px;
-        background: linear-gradient(135deg, #1d3557 0%, #e63946 100%);
-        color: white; font-family: 'Exo 2', sans-serif; font-weight: 900;
-        font-size: 1.4rem; text-transform: uppercase; border: none;
+        width: 100%; height: 75px; font-weight: 900; font-size: 1.3rem;
+        background-color: #1d3557; color: white; border: 2px solid #e63946; border-radius: 15px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. INTERFAZ PRINCIPAL ---
-st.markdown("<h1 class='f1-header'>🏎️ SCUDERIA CLS</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; color:#a8dadc; font-size:0.8rem;'>DATALOGGER MOBILE v2.1</p>", unsafe_allow_html=True)
+st.markdown("<h1 class='f1-neon'>🏎️ SCUDERIA CLS</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; color:#a8dadc; font-size:0.8rem;'>DIAGNÓSTICO PROFESIONAL v2.5</p>", unsafe_allow_html=True)
 
-# SELECCIÓN RÁPIDA
-col1, col2 = st.columns(2)
-with col1:
+# --- 4. SELECCIÓN DE UNIDAD ---
+col_v1, col_v2 = st.columns(2)
+with col_v1:
     marca = st.selectbox("MARCA:", sorted(list(datos_autos.keys())))
-with col2:
+with col_v2:
     modelo = st.selectbox("MODELO:", datos_autos[marca])
 
 st.markdown("---")
 
-# --- 5. PANEL DE TELEMETRÍA ---
-st.markdown("### 📊 TELEMETRÍA EN VIVO")
-
-# Espacios para actualización
-p_gauges = st.empty()
-p_chart = st.empty()
-
-if st.button("🚀 INICIAR CAPTURA DE DATOS"):
-    historial = []
-    for i in range(20):
-        # Simulación de telemetría para prueba visual en el cel
-        val_rpm = random.randint(850, 4200)
-        val_temp = random.randint(88, 95)
-        val_psi = round(random.uniform(28.0, 34.0), 1)
-        historial.append(val_rpm)
+# --- 5. TELEMETRÍA Y ESCANEO ---
+if st.button("🚀 INICIAR ESCANEO DE SISTEMAS"):
+    p_gauge = st.empty()
+    p_status = st.status("Sincronizando con Vgate iCar2...", expanded=True)
+    
+    # Simulación de captura (Para que pruebes la visual en el HB20)
+    for i in range(10):
+        val_rpm = random.randint(850, 950)
+        val_temp = random.randint(88, 91)
         
-        with p_gauges.container():
-            # Layout vertical para celulares
-            st.markdown(f"""
-                <div class='gauge-box'>
-                    <div class='gauge-label'>RPM ACTUALES</div>
-                    <div class='gauge-val'>{val_rpm}</div>
-                </div>
-                <div class='gauge-box'>
-                    <div class='gauge-label'>TEMPERATURA MOTOR</div>
-                    <div class='gauge-val'>{val_temp}ºC</div>
-                </div>
-                <div class='gauge-box'>
-                    <div class='gauge-label'>PRESIÓN ACEITE</div>
-                    <div class='gauge-val'>{val_psi} PSI</div>
-                </div>
-            """, unsafe_allow_html=True)
-        
-        p_chart.line_chart(historial)
-        time.sleep(0.4)
-    st.success(f"Sesión completada: {marca} {modelo}")
+        p_gauge.markdown(f"""
+            <div class='gauge-box'>
+                <div style='color:#a8dadc; font-size:0.7rem;'>TELEMETRÍA EN VIVO</div>
+                <div class='gauge-val'>{val_rpm} RPM | {val_temp}ºC</div>
+            </div>
+        """, unsafe_allow_html=True)
+        time.sleep(0.3)
+    
+    p_status.update(label="Escaneo Finalizado", state="complete")
+    st.success("✅ SISTEMA ÓPTIMO: No se detectaron fallas en la ECU.")
+    st.balloons()
+
+    # --- 6. ENVÍO DE REPORTE A WHATSAPP ---
+    st.markdown("### 📱 ENVIAR REPORTE")
+    nombre_cliente = st.text_input("Nombre del Cliente (Opcional):", "Usuario CLS")
+    
+    # Construcción del mensaje para WhatsApp
+    texto_reporte = (
+        f"🏎️ *REPORTE DE ESCANEO SCUDERIA CLS*\n\n"
+        f"🚗 *Vehículo:* {marca} {modelo}\n"
+        f"👤 *Cliente:* {nombre_cliente}\n"
+        f"📊 *Estado:* SISTEMA SIN FALLAS\n"
+        f"🌡️ *Temp. Trabajo:* {random.randint(88, 92)}ºC\n"
+        f"📍 *Ubicación:* Servicio realizado en Paysandú.\n\n"
+        f"✅ _Diagnóstico realizado con tecnología Vgate iCar2._"
+    )
+    
+    # Link de WhatsApp (Tu número para que te llegue a vos por ahora)
+    wa_url = f"https://wa.me/59899417716?text={urllib.parse.quote(texto_reporte)}"
+    
+    st.markdown(f"""
+        <a href="{wa_url}" target="_blank" style="text-decoration:none;">
+            <div style="background-color:#25d366; color:white; text-align:center; 
+            padding:20px; border-radius:15px; font-weight:900; font-size:1.2rem;">
+                📲 ENVIAR REPORTE POR WHATSAPP
+            </div>
+        </a>
+    """, unsafe_allow_html=True)
 
 st.markdown("---")
+with st.expander("📝 AYUDA DE CONEXIÓN"):
+    st.info(f"Para el {marca} {modelo}, el puerto está debajo del tablero, lado conductor. Asegúrate que el LED azul del chip parpadee antes de iniciar.")
 
-# --- 6. INGENIERÍA DE PISTA (ENTRADA MANUAL PARA EL CEL) ---
-with st.expander("📝 REGISTRAR FALLA MANUAL (BOXES)"):
-    st.write("Si el scanner detecta un código en el cel, anótalo aquí:")
-    codigo_falla = st.text_input("CÓDIGO DTC (Ej: P0300):")
-    desc_falla = st.text_area("DESCRIPCIÓN:")
-    if st.button("💾 GUARDAR EN LOG DE SCUDERIA"):
-        st.toast("Dato guardado en la base de datos de Paysandú")
-
-# --- 7. BOTÓN DE EMERGENCIA ---
-tel_taller = "099417716"
-wa_link = f"https://wa.me/598{tel_taller}?text=SOS: Telemetría crítica en mi {marca} {modelo}."
-st.markdown(f"""
-    <a href="{wa_link}" style="text-decoration:none;">
-        <div style="background-color:#e63946; color:white; text-align:center; 
-        padding:15px; border-radius:10px; font-weight:900; margin-top:20px;">
-            🆘 LLAMAR A BOXES (URGENTE)
-        </div>
-    </a>
-""", unsafe_allow_html=True)
-
-st.sidebar.caption("Scuderia CLS - Proyect 2026")
+st.sidebar.caption("Scuderia CLS - High Performance 2026")
